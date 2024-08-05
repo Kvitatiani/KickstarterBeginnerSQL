@@ -73,7 +73,7 @@ UPDATE kickstarter_projects
 SET project_length = DATEDIFF(MONTH, launched, deadline);
 
 
--- let's change name of the column so it doesn't confuse the reader
+-- renaming column for more clarity
 EXEC sp_rename 'kickstarter_projects.project_length', 'funding_window', 'COLUMN';
 
 
@@ -86,6 +86,39 @@ ORDER BY funding_window DESC;
 DELETE
 FROM kickstarter_projects
 WHERE launched = '1970-01-01 01:00:00.0000000'
+
+-- let's see the top 10 most successful projects by category
+SELECT TOP 10
+	category,
+	COUNT(*) AS SuccessCount,
+	SUM(COUNT(*)) OVER (ORDER BY COUNT(*) DESC) AS CumulativeSuccessCount
+FROM kickstarter_projects
+WHERE state = 'successful'
+GROUP BY category
+ORDER BY SuccessCount DESC;
+-- let's see the same for main_category
+SELECT TOP 10
+	main_category,
+	COUNT(*) AS SuccessCount
+FROM kickstarter_projects
+WHERE state = 'successful'
+GROUP BY main_category
+ORDER BY SuccessCount DESC;
+-- let's see the least popular categories with the same logic
+SELECT TOP 10
+	main_category,
+	COUNT(*) AS SuccessCount
+FROM kickstarter_projects
+WHERE state = 'successful'
+GROUP BY main_category
+ORDER BY SuccessCount;
+
+
+-- let's see the most expensive projects out there
+SELECT TOP 10
+	*
+FROM kickstarter_projects
+ORDER BY usd_pledged DESC;
 
 
 
